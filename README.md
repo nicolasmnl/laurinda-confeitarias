@@ -10,7 +10,7 @@ Site da **Laurinda Confeitaria**, confeitaria artesanal de bolos, doces, sobreme
 Uma landing page de página única que apresenta a confeitaria e leva o visitante a pedir um orçamento pelo WhatsApp. As seções são:
 
 - **Produtos:** bolos, doces, sobremesas, kits e encomendas especiais
-- **Galeria** de fotos e vídeo dos bastidores
+- **Galeria** com todas as fotos, filtrável por categoria (bolos e tortas, doces, bastidores)
 - **Como funciona o orçamento**, em três passos
 - **Contato** direto pelo WhatsApp
 
@@ -21,7 +21,6 @@ index.html          página
 assets/css/         estilos
 assets/js/main.js   scripts e configuração do WhatsApp
 assets/images/      fotos
-assets/videos/      vídeo
 ```
 
 ## Rodando localmente
@@ -39,12 +38,15 @@ O site fica hospedado na [Vercel](https://vercel.com), que está conectada a est
 
 - **WhatsApp:** o número e a mensagem pré-preenchida ficam em `CONFIG`, no topo de `assets/js/main.js`. O número vai só com dígitos, com DDI e DDD. Os links do `index.html` repetem o número para quem navega sem JavaScript, então troque nos dois lugares.
 - **Textos:** ficam em `index.html`.
-- **Fotos e vídeo:** salve o arquivo em `assets/` com o nome esperado. Enquanto o arquivo não existir, a página mostra um espaço reservado.
+- **Fotos:** ficam em `assets/images/`. Enquanto um arquivo referenciado não existir, a página mostra um espaço reservado com o nome esperado.
 
-| Arquivo | Onde aparece | Proporção |
-|---|---|---|
-| `images/hero.jpg` | Topo da página | 4:5 |
-| `images/bolo-01.jpg`, `doces-01.jpg`, `sobremesa-01.jpg`, `kits-01.jpg` | Cards de produtos | 4:5 |
-| `images/galeria-01.jpg` … `galeria-04.jpg` | Galeria | 4:5, 1:1, 3:4, 3:2 |
-| `videos/video.mp4` + `images/video-poster.jpg` | Bastidores | 9:16, sem áudio, < 8 MB |
-| `images/og-image.jpg` | Prévia ao compartilhar o link | 1200×630 |
+| Arquivo | Onde aparece |
+|---|---|
+| `images/bolo-01.jpg` | Topo da página e galeria |
+| `images/bolo-02.jpg`, `doces-01.jpg`, `torta-01.jpg`, `bolo-04.jpg` | Cards de produtos (bolos, doces, sobremesas, kits) e galeria |
+| `images/bolo-03.jpg`, `doces-02.jpg`, `bastidores-01.jpg` | Galeria |
+| `images/og-image.jpg` | Prévia ao compartilhar o link (1200×630, ainda não existe) |
+
+### Adicionando fotos na galeria
+
+Copie um bloco `<figure class="gallery-item">` dentro de `.gallery-grid` no `index.html`, troque o arquivo, o `alt`, a legenda e o `data-category` (`bolos`, `doces` ou `bastidores`). Uma categoria nova pede também um botão `data-filter` com o mesmo nome.

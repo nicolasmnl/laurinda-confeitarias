@@ -12,7 +12,6 @@ const CONFIG = {
 
   const $ = (sel, ctx = document) => ctx.querySelector(sel);
   const $$ = (sel, ctx = document) => [...ctx.querySelectorAll(sel)];
-  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   /* ---------- Links de WhatsApp ---------- */
   const waUrl = `https://wa.me/${CONFIG.WHATSAPP_NUMBER}?text=${encodeURIComponent(CONFIG.WHATSAPP_MESSAGE)}`;
@@ -82,6 +81,59 @@ const CONFIG = {
     if (e.matches && menu.classList.contains('is-open')) setMenu(false, { restoreFocus: false });
   });
 
+  /* ---------- Galeria: filtros ---------- */
+  const galleryItems = $$('[data-gallery] .gallery-item');
+  const filters = $$('[data-filter]');
+  filters.forEach((btn) => btn.addEventListener('click', () => {
+    const cat = btn.dataset.filter;
+    filters.forEach((b) => b.setAttribute('aria-pressed', String(b === btn)));
+    galleryItems.forEach((item) => {
+      item.hidden = cat !== 'todas' && item.dataset.category !== cat;
+    });
+  }));
+
+  /* ---------- Galeria: foto ampliada ---------- */
+  const lightbox = $('[data-lightbox]');
+  if (lightbox && typeof lightbox.showModal === 'function') {
+    const lbImg = $('[data-lightbox-img]', lightbox);
+    const lbCaption = $('[data-lightbox-caption]', lightbox);
+    const prevBtn = $('[data-lightbox-prev]', lightbox);
+    const nextBtn = $('[data-lightbox-next]', lightbox);
+    let list = [];
+    let index = 0;
+
+    const show = (i) => {
+      index = (i + list.length) % list.length;
+      const item = list[index];
+      const img = $('img', item);
+      lbImg.src = img.currentSrc || img.src;
+      lbImg.alt = img.alt;
+      lbCaption.textContent = $('figcaption', item)?.textContent ?? '';
+    };
+
+    galleryItems.forEach((item) => {
+      $('[data-gallery-open]', item).addEventListener('click', (e) => {
+        e.preventDefault();
+        list = galleryItems.filter((el) => !el.hidden);
+        prevBtn.hidden = nextBtn.hidden = list.length < 2;
+        show(list.indexOf(item));
+        lightbox.showModal();
+      });
+    });
+
+    prevBtn.addEventListener('click', () => show(index - 1));
+    nextBtn.addEventListener('click', () => show(index + 1));
+    $('[data-lightbox-close]', lightbox).addEventListener('click', () => lightbox.close());
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) lightbox.close();
+    });
+    lightbox.addEventListener('keydown', (e) => {
+      if (list.length < 2) return;
+      if (e.key === 'ArrowLeft') show(index - 1);
+      else if (e.key === 'ArrowRight') show(index + 1);
+    });
+  }
+
   if (!('IntersectionObserver' in window)) {
     $$('[data-reveal]').forEach((el) => el.classList.add('is-visible'));
     return;
@@ -109,37 +161,4 @@ const CONFIG = {
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
   navLinks.forEach((a) => { const s = $(a.hash); if (s) navObserver.observe(s); });
-
-  /* ---------- Vídeo ---------- */
-  const video = $('[data-video]');
-  const videoBtn = $('[data-video-toggle]');
-  if (video && videoBtn) {
-    const media = video.closest('.media');
-    let userPaused = reducedMotion;
-
-    const sync = () => {
-      const playing = !video.paused;
-      videoBtn.classList.toggle('is-playing', playing);
-      videoBtn.setAttribute('aria-label', playing ? 'Pausar vídeo' : 'Reproduzir vídeo');
-    };
-    const fail = () => media.classList.add('is-missing');
-    const play = () => video.play().catch(() => {
-      if (video.networkState === HTMLMediaElement.NETWORK_NO_SOURCE) fail();
-    });
-
-    video.addEventListener('play', sync);
-    video.addEventListener('pause', sync);
-    video.addEventListener('playing', () => media.classList.add('is-loaded'));
-    video.querySelector('source')?.addEventListener('error', fail);
-
-    videoBtn.addEventListener('click', () => {
-      if (video.paused) { userPaused = false; play(); }
-      else { userPaused = true; video.pause(); }
-    });
-
-    new IntersectionObserver(([e]) => {
-      if (e.isIntersecting && !userPaused) play();
-      else if (!e.isIntersecting) video.pause();
-    }, { threshold: 0.35 }).observe(video);
-  }
 })();
